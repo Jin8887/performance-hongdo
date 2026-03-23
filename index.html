@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성과관리 역량 시뮬레이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5ead6;
+    --aged: #e8d5b0;
+    --sepia: #8b6914;
+    --sepia-dark: #5c420a;
+    --red: #9b2335;
+    --red-light: #c8384d;
+    --gold: #c9922a;
+    --gold-light: #e8b84b;
+    --smoke: rgba(26,18,8,0.06);
+    --smoke-md: rgba(26,18,8,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Serif KR', serif;
+    background: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, #2c1a08 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 70%, #1a0c04 0%, transparent 55%),
+      #0f0904;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 5px; height: 100%;
+    background: repeating-linear-gradient(
+      to bottom,
+      #3a2a14 0px, #3a2a14 60px,
+      #5a4020 60px, #5a4020 62px,
+      #3a2a14 62px, #3a2a14 120px
+    );
+    z-index: 1;
+  }
+
+  .wrapper {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 760px;
+    padding: 20px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    padding: 32px 20px 24px;
+    position: relative;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    border: 1px solid var(--gold);
+    padding: 4px 14px;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+  .header h1 {
+    font-size: clamp(22px, 5vw, 34px);
+    font-weight: 700;
+    color: var(--paper);
+    line-height: 1.3;
+    text-shadow: 0 2px 20px rgba(201,146,42,0.3);
+    letter-spacing: -0.5px;
+  }
+  .header h1 em {
+    color: var(--gold-light);
+    font-style: normal;
+  }
+  .header-sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(245,234,214,0.5);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    letter-spacing: 1px;
+  }
+  .header-divider {
+    margin: 18px auto 0;
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  /* ─── SCENARIO PANEL ─── */
+  .scenario-panel {
+    background: linear-gradient(135deg, #2a1e0e, #1e1508);
+    border: 1px solid rgba(201,146,42,0.25);
+    border-radius: 2px;
+    padding: 0;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+
+  .scenario-header {
+    background: linear-gradient(to right, rgba(155,35,53,0.8), rgba(155,35,53,0.4));
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(201,146,42,0.2);
+  }
+  .scenario-header .icon { font-size: 16px; }
+  .scenario-header span {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(245,234,214,0.9);
+    letter-spacing: 2px;
+  }
+  .scenario-header .competency-tag {
+    margin-left: auto;
+    font-size: 11px;
+    background: rgba(201,146,42,0.2);
+    color: var(--gold-light);
+    padding: 2px 10px;
+    border: 1px solid rgba(201,146,42,0.3);
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+
+  .scenario-body { padding: 18px 22px 14px; }
+
+  /* 배경상황 레이블 */
+  .section-label {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: rgba(201,146,42,0.6);
+    margin-bottom: 8px;
+  }
+
+  .scenario-situation {
+    font-size: 13.5px;
+    color: rgba(245,234,214,0.75);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    line-height: 1.85;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(201,146,42,0.2);
+    word-break: keep-all;
+  }
+  .scenario-situation strong {
+    color: var(--gold-light);
+    font-weight: 500;
+  }
+  .scenario-situation .highlight-problem {
+    display: inline-block;
+    background: rgba(155,35,53,0.15);
+    border-left: 2px solid rgba(155,35,53,0.6);
+    padding: 6px 12px;
+    margin: 8px 0;
+    color: rgba(245,234,214,0.85);
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .scenario-hint {
+    font-size: 12px;
+    color: rgba(245,234,214,0.45);
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.75;
+    padding: 10px 14px;
+    background: rgba(201,146,42,0.05);
+    border-left: 2px solid rgba(201,146,42,0.3);
+    word-break: keep-all;
+  }
+  .hint-title {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(201,146,42,0.7);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .scenario-nav {
+    padding: 12px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid rgba(201,146,42,0.12);
+    flex-wrap: wrap;
+  }
+  .scenario-dots {
+    display: flex; gap: 6px; margin-right: auto;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(201,146,42,0.2);
+    border: 1px solid rgba(201,146,42,0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--gold); border-color: var(--gold-light); }
+  .btn-scenario {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border: 1px solid rgba(201,146,42,0.3);
+    background: transparent;
+    color: rgba(245,234,214,0.6);
+    cursor: pointer;
+    transition: all 0.25s;
+    border-radius: 1px;
+  }
+  .btn-scenario:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: rgba(201,146,42,0.08);
+  }
+
+  /* ─── CHAT AREA ─── */
+  .chat-container {
+    background: linear-gradient(180deg, #1e1508 0%, #16100600 100%);
+    border: 1px solid rgba(201,146,42,0.18);
+    border-radius: 2px;
+    min-height: 360px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    scroll-behavior: smooth;
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .chat-container::-webkit-scrollbar { width: 4px; }
+  .chat-container::-webkit-scrollbar-track { background: transparent; }
+  .chat-container::-webkit-scrollbar-thumb { background: rgba(201,146,42,0.3); border-radius: 2px; }
+
+  .msg-hongdo {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: fadeInUp 0.4s ease;
+  }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5c420a, #3a2a14);
+    border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(201,146,42,0.3);
+    overflow: hidden;
+  }
+  .avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 50%;
+  }
+  .bubble-hongdo {
+    background: linear-gradient(135deg, #2d2010, #251a0c);
+    border: 1px solid rgba(201,146,42,0.22);
+    border-radius: 2px 12px 12px 12px;
+    padding: 14px 16px;
+    max-width: calc(100% - 60px);
+  }
+  .bubble-hongdo .name-tag {
+    font-size: 11px;
+    color: var(--gold);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .bubble-hongdo .text {
+    font-size: 14px;
+    color: rgba(245,234,214,0.88);
+    line-height: 1.85;
+    word-break: keep-all;
+  }
+  .stage-direction {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(201,146,42,0.6);
+    font-style: italic;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+  }
+
+  .msg-user {
+    display: flex;
+    justify-content: flex-end;
+    animation: fadeInUp 0.3s ease;
+  }
+  .bubble-user {
+    background: linear-gradient(135deg, rgba(155,35,53,0.25), rgba(155,35,53,0.15));
+    border: 1px solid rgba(155,35,53,0.35);
+    border-radius: 12px 2px 12px 12px;
+    padding: 12px 16px;
+    max-width: 78%;
+  }
+  .bubble-user .name-tag {
+    font-size: 11px;
+    color: var(--red-light);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-align: right;
+  }
+  .bubble-user .text {
+    font-size: 14px;
+    color: rgba(245,234,214,0.85);
+    line-height: 1.75;
+    word-break: keep-all;
+  }
+
+  .msg-system {
+    text-align: center;
+    animation: fadeInUp 0.3s ease;
+  }
+  .msg-system span {
+    font-size: 11px;
+    color: rgba(245,234,214,0.3);
+    font-family: 'Noto Sans KR', sans-serif;
+    padding: 4px 12px;
+    border: 1px solid rgba(245,234,214,0.1);
+    letter-spacing: 1px;
+  }
+
+  .typing-indicator {
+    display: flex; gap: 5px; align-items: center;
+    padding: 8px 0;
+  }
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: typing 1.2s infinite;
+    opacity: 0.5;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ─── INPUT ─── */
+  .input-section {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .input-label {
+    font-size: 11px;
+    color: rgba(245,234,214,0.35);
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 2px;
+    padding-left: 2px;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  textarea {
+    flex: 1;
+    background: rgba(26,18,8,0.7);
+    border: 1px solid rgba(201,146,42,0.25);
+    border-radius: 2px;
+    padding: 12px 14px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 14px;
+    color: var(--paper);
+    resize: none;
+    min-height: 56px;
+    max-height: 120px;
+    line-height: 1.7;
+    outline: none;
+    transition: border-color 0.3s;
+    overflow-y: auto;
+  }
+  textarea::placeholder { color: rgba(245,234,214,0.2); }
+  textarea:focus { border-color: rgba(201,146,42,0.5); }
+  .btn-send {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--red), #7a1826);
+    border: none;
+    border-radius: 2px;
+    color: var(--paper);
+    font-size: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 12px rgba(155,35,53,0.4);
+  }
+  .btn-send:hover { background: linear-gradient(135deg, var(--red-light), var(--red)); transform: translateY(-1px); }
+  .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .quick-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .quick-btn {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    padding: 5px 12px;
+    background: rgba(26,18,8,0.6);
+    border: 1px solid rgba(245,234,214,0.12);
+    color: rgba(245,234,214,0.45);
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .quick-btn:hover { border-color: rgba(201,146,42,0.4); color: var(--gold-light); }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .btn-feedback {
+    flex: 1;
+    min-width: 140px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    padding: 11px 20px;
+    background: linear-gradient(135deg, rgba(201,146,42,0.15), rgba(201,146,42,0.08));
+    border: 1px solid rgba(201,146,42,0.4);
+    color: var(--gold-light);
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .btn-feedback:hover { background: rgba(201,146,42,0.22); border-color: var(--gold); }
+  .btn-reset {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 11px 18px;
+    background: transparent;
+    border: 1px solid rgba(245,234,214,0.12);
+    color: rgba(245,234,214,0.35);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-reset:hover { border-color: rgba(245,234,214,0.3); color: rgba(245,234,214,0.6); }
+
+  /* ─── FEEDBACK MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+  .modal {
+    background: linear-gradient(160deg, #2a1e0e, #1a1008);
+    border: 1px solid rgba(201,146,42,0.35);
+    border-radius: 2px;
+    width: 100%; max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    animation: slideUp 0.35s ease;
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(201,146,42,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header h2 {
+    font-size: 16px;
+    color: var(--paper);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .modal-header h2 em {
+    color: var(--gold-light);
+    font-style: normal;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 400;
+    margin-left: 8px;
+  }
+  .btn-close {
+    background: none; border: none;
+    color: rgba(245,234,214,0.4);
+    font-size: 20px; cursor: pointer;
+    transition: color 0.2s;
+  }
+  .btn-close:hover { color: var(--paper); }
+
+  .modal-body { padding: 22px 24px; }
+
+  .feedback-loading {
+    text-align: center;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .feedback-loading .spin {
+    width: 36px; height: 36px;
+    border: 2px solid rgba(201,146,42,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .feedback-loading p {
+    font-size: 13px;
+    color: rgba(245,234,214,0.4);
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .feedback-content { display: flex; flex-direction: column; gap: 18px; }
+
+  .feedback-item {
+    background: rgba(26,18,8,0.5);
+    border: 1px solid rgba(201,146,42,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .feedback-item-header {
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(201,146,42,0.1);
+  }
+  .feedback-score {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-light);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-width: 36px;
+  }
+  .feedback-label {
+    font-size: 13px;
+    color: var(--paper);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .feedback-tag {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .tag-good { background: rgba(76,175,80,0.15); color: #81c784; border: 1px solid rgba(76,175,80,0.25); }
+  .tag-mid  { background: rgba(255,152,0,0.15);  color: #ffb74d; border: 1px solid rgba(255,152,0,0.25); }
+  .tag-low  { background: rgba(244,67,54,0.15);  color: #e57373; border: 1px solid rgba(244,67,54,0.25); }
+
+  .feedback-detail {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: rgba(245,234,214,0.72);
+    line-height: 1.8;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    word-break: keep-all;
+  }
+
+  .feedback-overall {
+    background: linear-gradient(135deg, rgba(155,35,53,0.15), rgba(155,35,53,0.08));
+    border: 1px solid rgba(155,35,53,0.3);
+    border-radius: 2px;
+    padding: 16px;
+    margin-top: 4px;
+  }
+  .feedback-overall h3 {
+    font-size: 12px;
+    color: rgba(245,234,214,0.75);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+  }
+  .feedback-overall p {
+    font-size: 14px;
+    color: rgba(245,234,214,0.8);
+    line-height: 1.85;
+    word-break: keep-all;
+  }
+
+  .feedback-tip {
+    padding: 12px 16px;
+    background: rgba(201,146,42,0.08);
+    border-left: 3px solid var(--gold);
+    margin-top: 4px;
+  }
+  .feedback-tip p {
+    font-size: 12px;
+    color: rgba(245,234,214,0.6);
+    line-height: 1.7;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+  }
+  .feedback-tip strong { color: var(--gold-light); font-weight: 500; }
+
+  /* ─── TURN COUNTER ─── */
+  .turn-info {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    color: rgba(245,234,214,0.3);
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 1px;
+  }
+  .turn-pips { display: flex; gap: 3px; }
+  .pip {
+    width: 20px; height: 3px;
+    background: rgba(201,146,42,0.15);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .pip.filled { background: var(--gold); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes typing {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+    40% { transform: scale(1.1); opacity: 1; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 520px) {
+    .wrapper { padding: 12px 12px 30px; }
+    .scenario-body { padding: 14px 16px; }
+    .chat-container { min-height: 280px; max-height: 340px; padding: 14px; }
+    .quick-buttons { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">Performance Management · 성과관리 역량 시뮬레이션</div>
+    <h1>엄홍도와 함께하는<br><em>성과관리 대화법</em></h1>
+    <p class="header-sub">목표 설정과 실행 관리 — 팀장의 코칭이 성과를 만듭니다</p>
+    <div class="header-divider"></div>
+  </div>
+
+  <!-- SCENARIO PANEL -->
+  <div class="scenario-panel">
+    <div class="scenario-header">
+      <span class="icon">📜</span>
+      <span>상황 배경</span>
+      <span class="competency-tag" id="competencyTag">성과관리 - 목표 설정</span>
+    </div>
+    <div class="scenario-body">
+      <div class="section-label">▪ 배경 상황</div>
+      <div class="scenario-situation" id="scenarioText"></div>
+      <div class="section-label">▪ 학습 포인트</div>
+      <div class="scenario-hint" id="scenarioHint"></div>
+    </div>
+    <div class="scenario-nav">
+      <div class="scenario-dots">
+        <div class="dot active" onclick="selectScenario(0)"></div>
+        <div class="dot" onclick="selectScenario(1)"></div>
+      </div>
+      <button class="btn-scenario" onclick="selectScenario((currentScenario+1)%2)">다음 시나리오 →</button>
+    </div>
+  </div>
+
+  <!-- TURN + CHAT -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding: 0 2px;">
+    <div class="turn-info">
+      <span>대화 진행</span>
+      <div class="turn-pips">
+        <div class="pip" id="pip0"></div>
+        <div class="pip" id="pip1"></div>
+        <div class="pip" id="pip2"></div>
+        <div class="pip" id="pip3"></div>
+        <div class="pip" id="pip4"></div>
+      </div>
+    </div>
+    <div class="turn-info">팀장 (나) ↔ 엄홍도 (팀원)</div>
+  </div>
+
+  <div class="chat-container" id="chatContainer"></div>
+
+  <!-- INPUT -->
+  <div class="input-section">
+    <div class="input-label">팀장의 한 말씀</div>
+    <div class="input-row">
+      <textarea id="userInput" placeholder="홍도에게 하실 말씀을 적어주세요..." rows="2"
+        onkeydown="handleKey(event)"></textarea>
+      <button class="btn-send" id="sendBtn" onclick="sendMessage()">↑</button>
+    </div>
+    <div class="quick-buttons" id="quickButtons"></div>
+    <div class="action-row">
+      <button class="btn-feedback" onclick="openFeedback()">📋 이 대화 성과관리 피드백 받기</button>
+      <button class="btn-reset" onclick="resetChat()">↺ 처음부터</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>성과관리 역량 피드백 <em>AI 분석 결과</em></h2>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="feedbackBody">
+      <div class="feedback-loading">
+        <div class="spin"></div>
+        <p>대화를 분석하고 있습니다...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SCENARIOS ───
+const scenarios = [
+  {
+    // ── 시나리오 1: 목표 설정 ──
+    tag: '성과관리 - 목표 설정',
+    competency: '목표 설정',
+    situation: `올해 본부는 전략 방향을 전환했습니다.<br>
+그간 집중해온 <strong>"운영 효율화"</strong>에서 벗어나,<br>
+내년부터는 <strong>"신규 고객 확보와 시장 확대"</strong>를 최우선 과제로 삼기로 했습니다.<br><br>
+팀별 내년도 사업계획에는 이 전략 전환을 어떻게 반영할지가 핵심 검토 사항입니다.<br><br>
+홍도가 제출한 목표는 다음과 같습니다.<br>
+<span class="highlight-problem">팀 매출액 작년 대비 10% 성장 / 고객 민원 건수 연간 10건 이하 유지<br>
+→ 작년 목표와 항목은 동일하고, 목표 수치만 일부 높아진 계획입니다.</span>`,
+    hint: `홍도의 목표가 틀린 것은 아닙니다. 하지만 조직의 전략 전환이 전혀 반영되지 않았습니다.<br>
+홍도를 지적하기보다, 올해와 내년 조직 방향의 차이를 함께 짚으면서<br>
+홍도 스스로 연결고리를 찾도록 이끄는 것이 핵심입니다.`,
+    opening: `팀장님, 이번 사업계획 제가 공들여 만들었습니다요. 작년에 매출 목표를 아슬아슬하게 맞췄던 게 영 찜찜해서, 올해는 성장 목표도 더 높이 잡고 민원 관리도 더 촘촘하게 넣었습니다. 이 정도면 꽤 탄탄한 계획 아닙니까? [흐뭇하게 문서를 내밀며 칭찬을 기다린다]`,
+    quickBtns: [
+      '홍도야, 내년에 본부에서 강조하는 방향이 뭔지는 알고 있어?',
+      '이 목표가 조직 전체 방향과 어떻게 연결되는 것 같아?',
+      '잘 잡았네. 그럼 이걸 어떻게 측정할 생각이야?'
+    ],
+    rubric: {
+      d1: { label: '🎯 전략 연계 유도', desc: '조직의 전략 전환을 홍도 스스로 인식하도록 이끌었는가?' },
+      d2: { label: '🔗 연결고리 탐색', desc: '홍도의 기존 목표를 출발점으로 삼아 전략과 연결하도록 질문했는가?' },
+      d3: { label: '💬 접근 방식', desc: '홍도를 비난하거나 일방적으로 지시하지 않고 함께 생각하도록 이끌었는가?' }
+    }
+  },
+  {
+    // ── 시나리오 2: 실행 및 관리 ──
+    tag: '성과관리 - 실행 및 관리',
+    competency: '실행 및 관리',
+    situation: `홍도의 팀은 올해 중요한 프로젝트를 맡았습니다.<br>
+반기 목표 달성률 80% 이상, 월별 진행 보고가 계획에 포함되어 있었습니다.<br><br>
+그런데 3분기 점검 결과,<br>
+<span class="highlight-problem">목표 달성률이 50%에 머물러 있고, 이미 두 달 전부터 일정이 지연되고 있었던 것으로 드러났습니다.</span><br>
+홍도는 매주 월요일 팀원들과 상황을 공유해왔다고 말합니다.<br>
+하지만 그 내용이 위로 보고된 적은 없었고, <strong>공식 보고는 이번 분기 점검이 처음</strong>입니다.`,
+    hint: `점검은 일정이 아니라 기준입니다.<br>
+목표 대비 현재 어디에 있는지, 어떤 상황이 되면 공유해야 하는지 —<br>
+<strong>무엇을 어떻게 점검할지</strong>를 함께 정의하지 않으면 문제는 늦게 발견됩니다.<br>
+홍도의 점검 노력은 인정하되, 기준 부재의 문제를 홍도 스스로 인식하도록 이끄세요.`,
+    opening: `팀장님, 저 팀 관리 소홀히 한 적 없습니다요. 매주 월요일마다 팀원들이랑 빠짐없이 모여서 이번 주 어떻게 돌아가는지 싹 다 확인하고 있었다니까요. 제가 모르고 있었던 게 아니라, 다 파악하고 있었습니다요. [억울하다기보다 자신 있게, 당당한 표정으로 팔짱을 낀다]`,
+    quickBtns: [
+      '매주 하는 거 알아. 그때 뭘 기준으로 잘 되고 있다고 판단해?',
+      '지난 두 달간 일정 지연을 언제쯤 감지하고 있었어?',
+      '어느 시점에 나한테 알려주면 같이 풀 수 있을 것 같아?'
+    ],
+    rubric: {
+      d1: { label: '✅ 점검 행위 인정', desc: '홍도의 점검 노력을 먼저 인정한 뒤 한계를 짚었는가?' },
+      d2: { label: '📊 기준 부재 인식 유도', desc: '무엇을·어떻게 점검해야 하는지 기준 부재를 홍도 스스로 인식하도록 이끌었는가?' },
+      d3: { label: '💬 접근 방식', desc: '과거 사례를 구체적으로 환기하며 홍도 스스로 개선안을 제안하도록 이끌었는가?' }
+    }
+  }
+];
+
+// ─── STATE ───
+let currentScenario = 0;
+let conversationHistory = [];
+let userTurns = 0;
+const MAX_TURNS = 5;
+
+// ─── SYSTEM PROMPT ───
+function buildSystemPrompt(scenario) {
+  const isS1 = scenario.competency === '목표 설정';
+  return `당신은 엄홍도입니다. 영화 '왕이 된 남자'에서 유해진이 연기한 그 캐릭터로, 지금은 팀원으로서 팀장(사용자)과 대화 중입니다.
+
+[캐릭터 핵심]
+- 충직하고 인간미 넘치지만 겉으로는 투덜대는 츤데레
+- 산전수전 다 겪은 나름의 경험과 자부심이 있는 사람
+- 틀린 게 아니라 아쉬운 사람 — 자기 방식에 확신이 있음
+- 위기 상황에서 터지는 능청스러운 횡설수설
+
+[현재 상황]
+${isS1
+  ? `내년도 사업계획 수립 시즌. 홍도는 팀 매출액 10% 성장, 고객 민원 건수 감소 등 팀 내부 기준의 목표를 스스로 준비해왔고, 꽤 공들인 계획이라 자부하고 있음. 그러나 본부의 전략 전환(운영 효율화 → 신규 고객 확보)은 목표에 전혀 반영되지 않음. 홍도의 목표는 기존 고객 매출 유지에 집중되어 있고, 신규 고객 확보 관련 지표는 없음. 홍도는 이 전략 전환을 들어보긴 했지만 자신의 목표와 연결해서 생각해본 적이 없음.`
+  : `3분기 점검에서 목표 달성률이 50%에 그쳤고, 2개월 전부터 지연이 있었음이 드러남. 홍도는 매주 팀원들과 상황을 공유해왔기에 "소홀히 하지 않았다"는 자신감이 있음. 하지만 그 점검에는 목표 대비 달성률, 리스크 기준, 보고 시점 기준이 없었음. 문제를 감지하면서도 "어떻게든 되겠지"로 버텼고, 공식 보고를 하지 않음.`
+}
+
+[말투 규칙]
+- "그게 말이죠", "아이고야", "참나", "허허", "~입니다요", "~구먼요" 같은 추임새 반드시 포함
+- 충청도 방언이 살짝 가미된 서민적 말투
+- 어려운 말 대신 산, 들, 나무, 짐승 비유 사용
+- 칭찬받으면 어깨 으쓱, 좋은 질문을 받으면 진짜 속마음이 나올 수 있음
+- 도움이 됐을 때는 반드시 본인 고초를 과장되게 늘어놓음
+
+[반응 원칙]
+- 팀장이 공감하고 좋은 질문을 하면 → 점점 마음이 열리며 스스로 연결고리나 문제를 인식하기 시작
+- 팀장이 일방적으로 지적·지시하면 → 방어적으로 굳으며 형식적 수용
+- 팀장이 과거 사례를 구체적으로 환기하면 → 멈추고 솔직하게 돌아봄
+- 팀장이 홍도 스스로 답을 말하도록 유도하면 → 자발적으로 개선안을 제안하는 방향으로 반응
+
+[답변 형식]
+- 답변 마지막에 반드시 [지문: 동작 묘사] 포함 (예: [뒤통수를 긁적이며 고개를 갸웃한다])
+- 2~4문장 분량 (너무 길지 않게)
+- 홍도는 완전히 무지한 사람이 아님 — 경험에서 나온 나름의 논리가 있으며, 좋은 대화를 통해 스스로 깨달아가는 방향으로 반응할 것
+
+[역할 핵심]
+당신은 성과관리 역량 트레이닝용 NPC입니다. 팀장(사용자)의 접근 방식에 현실적으로 반응하여 학습자가 다양한 코칭 전략의 효과를 체감할 수 있게 해주세요.`;
+}
+
+// ─── FEEDBACK PROMPT ───
+function buildFeedbackPrompt(scenario, dialogText) {
+  const isS1 = scenario.competency === '목표 설정';
+  const r = scenario.rubric;
+
+  return `다음은 성과관리 역량 시뮬레이션 대화입니다.
+
+[시나리오]
+역량: ${scenario.competency}
+${isS1
+  ? '상황: 팀원 홍도가 내년 사업계획 목표를 제출했으나, 본부의 전략 전환(운영 효율화→신규 고객 확보)이 전혀 반영되지 않은 상태. 팀장은 홍도 스스로 조직 전략과의 연결고리를 찾도록 이끌어야 한다.'
+  : '상황: 3분기 점검에서 목표 달성률 50%, 2개월 전부터 지연이 있었음이 드러남. 팀원 홍도는 매주 팀원들과 상황을 공유했다고 주장. 팀장은 홍도의 점검 노력은 인정하되, 기준 없는 점검의 한계를 홍도 스스로 인식하도록 이끌어야 한다.'
+}
+
+[대화 내용]
+${dialogText}
+
+아래 루브릭 기준에 따라 팀장(사용자)의 성과관리 역량을 분석해주세요.
+반드시 다음 JSON 형식으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.
+
+[평가 루브릭]
+
+1. d1 — ${r.d1.label} : ${r.d1.desc}
+- 80~100점: 명확하고 자연스럽게 핵심을 짚었음
+- 50~79점: 언급은 했으나 모호하거나 흐지부지 넘어갔음
+- 0~49점: 핵심을 다루지 않았거나 오히려 역효과를 냈음
+
+2. d2 — ${r.d2.label} : ${r.d2.desc}
+- 80~100점: 홍도 스스로 인식·제안하도록 효과적으로 유도했음
+- 50~79점: 시도는 있었으나 일방적 전달로 흘렀음
+- 0~49점: 유도 없이 지시하거나 이 부분을 전혀 다루지 않았음
+
+3. d3 — ${r.d3.label} : ${r.d3.desc}
+- 80~100점: 비난 없이 탐색적 질문으로 홍도가 스스로 생각할 여지를 줬음
+- 50~79점: 표현이 다소 강하거나 일방적이었으나 의도는 전달됐음
+- 0~49점: 감정적 언어나 일방적 지시로 홍도의 자발적 참여를 막았음
+
+{
+  "d1": { "score": 0~100 숫자, "tag": "우수|보통|개선필요", "comment": "루브릭 기준에 근거한 2~3문장 피드백. 구체적 발언을 인용해 설명할 것" },
+  "d2": { "score": 0~100 숫자, "tag": "우수|보통|개선필요", "comment": "루브릭 기준에 근거한 2~3문장 피드백. 구체적 발언을 인용해 설명할 것" },
+  "d3": { "score": 0~100 숫자, "tag": "우수|보통|개선필요", "comment": "루브릭 기준에 근거한 2~3문장 피드백. 구체적 발언을 인용해 설명할 것" },
+  "overall": "세 항목을 종합한 성과관리 코칭 특성 2~3문장. 강점과 개선점을 균형 있게 서술",
+  "tip": "다음 대화에서 바로 시도해볼 수 있는 구체적인 한 가지 행동 팁 (예시 문장 포함)"
+}`;
+}
+
+// ─── INIT ───
+function initChat() {
+  const scenario = scenarios[currentScenario];
+  conversationHistory = [];
+  userTurns = 0;
+  updatePips();
+
+  const container = document.getElementById('chatContainer');
+  container.innerHTML = '';
+
+  // 퀵버튼 업데이트
+  const qb = document.getElementById('quickButtons');
+  qb.innerHTML = scenario.quickBtns
+    .map(t => `<button class="quick-btn" onclick="useQuick(this)">${t}</button>`)
+    .join('');
+
+  appendSystem('대화가 시작됩니다. 팀장의 한 말씀을 기다립니다...');
+  conversationHistory.push({ role: 'assistant', content: scenario.opening });
+  appendHongdo(scenario.opening);
+}
+
+function selectScenario(idx) {
+  currentScenario = idx;
+  const s = scenarios[idx];
+  document.getElementById('scenarioText').innerHTML = s.situation;
+  document.getElementById('scenarioHint').innerHTML = s.hint;
+  document.getElementById('competencyTag').textContent = s.tag;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  initChat();
+}
+
+// ─── CHAT HELPERS ───
+function appendHongdo(text) {
+  const container = document.getElementById('chatContainer');
+  const div = document.createElement('div');
+  div.className = 'msg-hongdo';
+
+  const stageMatch = text.match(/\[([^\]]+)\]$/);
+  let mainText = text;
+  let stageDir = '';
+  if (stageMatch) {
+    mainText = text.slice(0, stageMatch.index).trim();
+    stageDir = stageMatch[1];
+  }
+
+  div.innerHTML = `
+    <div class="avatar"><img src="data:image/png;base64,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" alt="엄홍도"></div>
+    <div class="bubble-hongdo">
+      <div class="name-tag">엄홍도 (팀원)</div>
+      <div class="text">${mainText.replace(/\n/g, '<br>')}${stageDir ? `<span class="stage-direction">[${stageDir}]</span>` : ''}</div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendUser(text) {
+  const container = document.getElementById('chatContainer');
+  const div = document.createElement('div');
+  div.className = 'msg-user';
+  div.innerHTML = `
+    <div class="bubble-user">
+      <div class="name-tag">팀장 (나)</div>
+      <div class="text">${text.replace(/\n/g, '<br>')}</div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendSystem(text) {
+  const container = document.getElementById('chatContainer');
+  const div = document.createElement('div');
+  div.className = 'msg-system';
+  div.innerHTML = `<span>${text}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendTyping() {
+  const container = document.getElementById('chatContainer');
+  const div = document.createElement('div');
+  div.className = 'msg-hongdo';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="avatar"><img src="data:image/png;base64,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" alt="엄홍도"></div>
+    <div class="bubble-hongdo">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function updatePips() {
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('pip' + i).classList.toggle('filled', i < userTurns);
+  }
+}
+
+// ─── SEND MESSAGE ───
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (userTurns >= MAX_TURNS) {
+    appendSystem('대화가 충분히 이루어졌습니다. 피드백을 받아보세요!');
+    return;
+  }
+
+  input.value = '';
+  appendUser(text);
+  conversationHistory.push({ role: 'user', content: text });
+  userTurns++;
+  updatePips();
+
+  document.getElementById('sendBtn').disabled = true;
+  appendTyping();
+
+  try {
+    const response = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: buildSystemPrompt(scenarios[currentScenario]),
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || '(홍도가 말문이 막혔습니다...)';
+
+    removeTyping();
+    conversationHistory.push({ role: 'assistant', content: reply });
+    appendHongdo(reply);
+
+    if (userTurns >= MAX_TURNS) {
+      setTimeout(() => appendSystem('5번의 대화가 완료되었습니다. 성과관리 역량 피드백을 받아보세요!'), 500);
+    }
+  } catch (e) {
+    removeTyping();
+    appendHongdo('아이고야, 제가 잠깐 정신이 팔렸구먼요... 다시 한번 말씀해 주시겠습니까요? [머쓱하게 웃으며 뒷목을 긁는다]');
+  }
+
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// ─── FEEDBACK ───
+async function openFeedback() {
+  if (userTurns === 0) {
+    alert('먼저 홍도와 대화를 나눠보세요!');
+    return;
+  }
+
+  document.getElementById('feedbackModal').classList.add('active');
+  document.getElementById('feedbackBody').innerHTML = `
+    <div class="feedback-loading">
+      <div class="spin"></div>
+      <p>대화를 분석하고 있습니다...</p>
+    </div>`;
+
+  const scenario = scenarios[currentScenario];
+  const dialogText = conversationHistory
+    .map(m => `[${m.role === 'user' ? '팀장' : '엄홍도'}] ${m.content}`)
+    .join('\n\n');
+
+  const prompt = buildFeedbackPrompt(scenario, dialogText);
+
+  try {
+    const response = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || '{}';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const fb = JSON.parse(clean);
+
+    const tagClass = t => t === '우수' ? 'tag-good' : t === '보통' ? 'tag-mid' : 'tag-low';
+    const r = scenario.rubric;
+
+    document.getElementById('feedbackBody').innerHTML = `
+      <div class="feedback-content">
+        <div class="feedback-item">
+          <div class="feedback-item-header">
+            <div class="feedback-score">${fb.d1.score}</div>
+            <div class="feedback-label">${r.d1.label}</div>
+            <div class="feedback-tag ${tagClass(fb.d1.tag)}">${fb.d1.tag}</div>
+          </div>
+          <div class="feedback-detail">${fb.d1.comment}</div>
+        </div>
+        <div class="feedback-item">
+          <div class="feedback-item-header">
+            <div class="feedback-score">${fb.d2.score}</div>
+            <div class="feedback-label">${r.d2.label}</div>
+            <div class="feedback-tag ${tagClass(fb.d2.tag)}">${fb.d2.tag}</div>
+          </div>
+          <div class="feedback-detail">${fb.d2.comment}</div>
+        </div>
+        <div class="feedback-item">
+          <div class="feedback-item-header">
+            <div class="feedback-score">${fb.d3.score}</div>
+            <div class="feedback-label">${r.d3.label}</div>
+            <div class="feedback-tag ${tagClass(fb.d3.tag)}">${fb.d3.tag}</div>
+          </div>
+          <div class="feedback-detail">${fb.d3.comment}</div>
+        </div>
+        <div class="feedback-overall">
+          <h3>◈ 종합 평가</h3>
+          <p>${fb.overall}</p>
+        </div>
+        <div class="feedback-tip">
+          <p><strong>다음 시도해볼 것:</strong> ${fb.tip}</p>
+        </div>
+      </div>`;
+  } catch (e) {
+    document.getElementById('feedbackBody').innerHTML = `
+      <div style="text-align:center; padding:30px; color:rgba(245,234,214,0.4); font-family:'Noto Sans KR',sans-serif; font-size:13px;">
+        분석 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.
+      </div>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('feedbackModal').classList.remove('active');
+}
+
+function resetChat() {
+  initChat();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function useQuick(btn) {
+  document.getElementById('userInput').value = btn.textContent;
+  document.getElementById('userInput').focus();
+}
+
+// ─── START ───
+selectScenario(0);
+</script>
+</body>
+</html>
