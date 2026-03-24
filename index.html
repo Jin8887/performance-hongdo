@@ -810,7 +810,7 @@
   <div class="header">
     <div class="header-badge">Performance Management · 성과관리 역량 시뮬레이션</div>
     <h1>엄홍도와 함께하는<br><em>성과관리 대화법</em></h1>
-    <p class="header-sub">목표 설정과 실행 관리 — 팀장의 코칭이 성과를 만듭니다</p>
+    <p class="header-sub">팀장의 코칭이 성과를 만듭니다</p>
     <div class="header-divider"></div>
   </div>
 
@@ -819,20 +819,14 @@
     <div class="scenario-header">
       <span class="icon">📋</span>
       <span>상황 배경</span>
-      <span class="competency-tag" id="competencyTag">성과관리 - 목표 설정</span>
+      <span class="competency-tag" id="competencyTag">성과관리</span>
     </div>
     <div class="scenario-body">
       <div class="section-label">▪ 배경 상황</div>
       <div class="scenario-situation" id="scenarioText"></div>
       <div class="scenario-hint" id="scenarioHint"></div>
     </div>
-    <div class="scenario-nav">
-      <div class="scenario-dots">
-        <div class="dot active" onclick="selectScenario(0)"></div>
-        <div class="dot" onclick="selectScenario(1)"></div>
-      </div>
-      <button class="btn-scenario" onclick="selectScenario((currentScenario+1)%2)">다음 시나리오 →</button>
-    </div>
+
   </div>
 
   <!-- TURN + CHAT -->
@@ -904,34 +898,7 @@
 // ─── SCENARIOS ───
 const scenarios = [
   {
-    // ── 시나리오 1: 목표 설정 ──
-    tag: '성과관리 - 목표 설정',
-    competency: '목표 설정',
-    situation: `올해 본부는 전략 방향을 전환했습니다.<br>
-그간 집중해온 <strong>"운영 효율화"</strong>에서 벗어나,<br>
-내년부터는 <strong>"신규 고객 확보와 시장 확대"</strong>를 최우선 과제로 삼기로 했습니다.<br><br>
-팀별 내년도 사업계획에는 이 전략 전환을 어떻게 반영할지가 핵심 검토 사항입니다.<br><br>
-홍도가 제출한 목표는 다음과 같습니다.<br>
-<span class="highlight-problem">팀 매출액 작년 대비 10% 성장 / 고객 민원 건수 연간 10건 이하 유지<br>
-→ 작년 목표와 항목은 동일하고, 목표 수치만 일부 높아진 계획입니다.</span>`,
-    hint: `홍도의 목표가 틀린 것은 아닙니다. 하지만 조직의 전략 전환이 전혀 반영되지 않았습니다.<br>
-홍도를 지적하기보다, 올해와 내년 조직 방향의 차이를 함께 짚으면서<br>
-홍도 스스로 연결고리를 찾도록 이끄는 것이 핵심입니다.`,
-    opening: `팀장님, 이번 사업계획 제가 공들여 만들었습니다요. 작년에 매출 목표를 아슬아슬하게 맞췄던 게 영 찜찜해서, 올해는 성장 목표도 더 높이 잡고 민원 관리도 더 촘촘하게 넣었습니다. 이 정도면 꽤 탄탄한 계획 아닙니까? [흐뭇하게 문서를 내밀며 칭찬을 기다린다]`,
-    quickBtns: [
-      '홍도야, 내년에 본부에서 강조하는 방향이 뭔지는 알고 있어?',
-      '이 목표가 조직 전체 방향과 어떻게 연결되는 것 같아?',
-      '잘 잡았네. 그럼 이걸 어떻게 측정할 생각이야?'
-    ],
-    rubric: {
-      d1: { label: '🎯 전략 연계 유도', desc: '조직의 전략 전환을 홍도 스스로 인식하도록 이끌었는가?' },
-      d2: { label: '🔗 연결고리 탐색', desc: '홍도의 기존 목표를 출발점으로 삼아 전략과 연결하도록 질문했는가?' },
-      d3: { label: '💬 접근 방식', desc: '홍도를 비난하거나 일방적으로 지시하지 않고 함께 생각하도록 이끌었는가?' }
-    }
-  },
-  {
-    // ── 시나리오 2: 실행 및 관리 ──
-    tag: '성과관리 - 실행 및 관리',
+    tag: '성과관리',
     competency: '실행 및 관리',
     situation: `홍도의 팀은 올해 중요한 프로젝트를 맡았습니다.<br>
 반기 목표 달성률 80% 이상, 월별 진행 보고가 계획에 포함되어 있었습니다.<br><br>
@@ -1074,7 +1041,6 @@ function initChat() {
 
   // 퀵버튼 제거됨
 
-  appendSystem('대화가 시작됩니다. 팀장의 한 말씀을 기다립니다...');
   conversationHistory.push({ role: 'assistant', content: scenario.opening });
   appendHongdo(scenario.opening);
 }
