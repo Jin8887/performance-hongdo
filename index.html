@@ -1254,6 +1254,7 @@ async function openFeedback() {
     const fb = JSON.parse(clean);
 
     lastFeedbackData = fb;   // 피드백 저장
+    saveToSheet(fb, dialogText);  // Google Sheets 자동 저장
 
     const tagClass = t => t === '우수' ? 'tag-good' : t === '보통' ? 'tag-mid' : 'tag-low';
     const r = scenario.rubric;
@@ -1487,6 +1488,44 @@ async function saveChatImage() {
   document.body.appendChild(clone);
   await captureAndSave(clone, `홍도_대화이미지_${getTimestamp()}.png`);
   document.body.removeChild(clone);
+}
+
+// ─── GOOGLE SHEETS 저장 ───
+async function saveToSheet(fb, dialogText) {
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxwF2rpXNieV0U3A0zq6uK5IobS1L5wp8eLRhpDRC2JZLgB-OLUhv8sqrAoLQgBf7of/exec';
+  const scenario = scenarios[currentScenario];
+  const now = new Date().toLocaleString('ko-KR');
+
+  const payload = {
+    timestamp: now,
+    scenario: scenario.tag,
+    d1_label: scenario.rubric.d1.label,
+    d1_score: fb.d1.score,
+    d1_tag: fb.d1.tag,
+    d1_comment: fb.d1.comment,
+    d2_label: scenario.rubric.d2.label,
+    d2_score: fb.d2.score,
+    d2_tag: fb.d2.tag,
+    d2_comment: fb.d2.comment,
+    d3_label: scenario.rubric.d3.label,
+    d3_score: fb.d3.score,
+    d3_tag: fb.d3.tag,
+    d3_comment: fb.d3.comment,
+    overall: fb.overall,
+    tip: fb.tip,
+    dialog: dialogText
+  };
+
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    console.warn('시트 저장 실패:', e);
+  }
 }
 
 async function saveFeedbackImage() {
