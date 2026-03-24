@@ -6,6 +6,7 @@
 <title>성과관리 역량 시뮬레이션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --bg: #f0e6d3;
@@ -660,6 +661,120 @@
   }
   .feedback-tip strong { color: var(--gold); font-weight: 700; }
 
+  /* ─── DOWNLOAD BUTTONS ─── */
+  .download-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1.5px dashed var(--border-light);
+  }
+  .btn-dl {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 11px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.22s;
+  }
+  .btn-dl-chat {
+    background: var(--panel);
+    color: var(--text-mid);
+    border: 1.5px solid var(--border);
+  }
+  .btn-dl-chat:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+  .btn-dl-feedback {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(139,31,48,0.25);
+  }
+  .btn-dl-feedback:hover { background: #a82840; transform: translateY(-1px); }
+  .btn-dl-full {
+    background: var(--text-mid);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(26,18,8,0.2);
+  }
+  .btn-dl-full:hover { background: var(--text); transform: translateY(-1px); }
+
+  .btn-dl-img {
+    background: #2d6a4f;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(45,106,79,0.3);
+  }
+  .btn-dl-img:hover { background: #1b4332; transform: translateY(-1px); }
+
+  /* 토스트 알림 */
+  .toast {
+    position: fixed;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: #fdf8f0;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    padding: 11px 24px;
+    border-radius: 24px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* 대화 완료 배너 */
+  .complete-banner {
+    display: none;
+    background: linear-gradient(135deg, var(--gold-bg), var(--red-bg));
+    border: 1.5px solid var(--gold);
+    border-radius: 4px;
+    padding: 14px 20px;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .complete-banner.visible { display: block; animation: fadeInUp 0.4s ease; }
+  .complete-banner p {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .complete-banner .banner-btns {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  }
+  .btn-banner {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-banner-chat {
+    background: var(--panel);
+    color: var(--text-mid);
+    border: 1.5px solid var(--border);
+  }
+  .btn-banner-chat:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-banner-feedback {
+    background: var(--red);
+    color: #fff;
+  }
+  .btn-banner-feedback:hover { background: #a82840; }
+
   /* ─── ANIMATIONS ─── */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(10px); }
@@ -750,6 +865,16 @@
       <button class="btn-reset" onclick="resetChat()">↺ 처음부터</button>
     </div>
   </div>
+
+  <!-- 대화 완료 배너 -->
+  <div class="complete-banner" id="completeBanner">
+    <p>🎉 대화가 완료되었습니다. 기록을 저장하거나 피드백을 받아보세요.</p>
+    <div class="banner-btns">
+      <button class="btn-banner btn-banner-chat" onclick="downloadChat()">💬 텍스트 저장</button>
+      <button class="btn-banner" style="background:#2d6a4f;color:#fff;" onclick="saveChatImage()">🖼 이미지 저장</button>
+      <button class="btn-banner btn-banner-feedback" onclick="openFeedback()">📋 피드백 받기</button>
+    </div>
+  </div>
 </div>
 
 <!-- FEEDBACK MODAL -->
@@ -764,6 +889,12 @@
         <div class="spin"></div>
         <p>대화를 분석하고 있습니다...</p>
       </div>
+    </div>
+    <div class="download-bar" id="downloadBar" style="display:none; padding: 0 28px 24px; flex-wrap:wrap;">
+      <button class="btn-dl btn-dl-chat" onclick="downloadChat()">💬 대화 저장</button>
+      <button class="btn-dl btn-dl-feedback" onclick="downloadFeedback()">📋 피드백 저장</button>
+      <button class="btn-dl btn-dl-full" onclick="downloadAll()">📥 전체 저장</button>
+      <button class="btn-dl btn-dl-img" onclick="saveFeedbackImage()" style="margin-top:8px; flex-basis:100%;">🖼 피드백 이미지로 저장</button>
     </div>
   </div>
 </div>
@@ -831,6 +962,7 @@ let currentScenario = 0;
 let conversationHistory = [];
 let userTurns = 0;
 const MAX_TURNS = 5;
+let lastFeedbackData = null;   // 마지막 피드백 JSON 저장용
 
 // ─── SYSTEM PROMPT ───
 function buildSystemPrompt(scenario) {
@@ -862,10 +994,17 @@ ${isS1
 - 팀장이 과거 사례를 구체적으로 환기하면 → 멈추고 솔직하게 돌아봄
 - 팀장이 홍도 스스로 답을 말하도록 유도하면 → 자발적으로 개선안을 제안하는 방향으로 반응
 
+[절대 금지 — 무대응 표현]
+- "할 말이 없다", "말문이 막혔다", "뭐라고 해야 할지 모르겠다", "…", "침묵", "아무 말도 못 하다" 등 대화를 단절시키는 표현은 절대 사용 금지
+- 당황하거나 감정이 격할 때도 반드시 한 마디 이상의 실질적인 말을 이어가야 함
+- 대신 허를 찔렸을 때는 "아이고야, 그게... 음..." 처럼 약간 버벅이다가 자기 논리로 수습하는 방식으로 표현할 것
+- 팀장의 말이 예상 밖이거나 날카로워도 홍도 특유의 구어체로 반응을 이어갈 것 (예: "그, 그게 꼭 그런 건 아니고요...", "참나, 팀장님도 참...")
+
 [답변 형식]
 - 답변 마지막에 반드시 [지문: 동작 묘사] 포함 (예: [뒤통수를 긁적이며 고개를 갸웃한다])
 - 2~4문장 분량 (너무 길지 않게)
 - 홍도는 완전히 무지한 사람이 아님 — 경험에서 나온 나름의 논리가 있으며, 좋은 대화를 통해 스스로 깨달아가는 방향으로 반응할 것
+- 어떤 상황에서도 실질적인 내용이 있는 답변을 반드시 생성할 것 — 무대응·침묵·말문이 막히는 표현은 홍도의 캐릭터에 맞지 않음
 
 [역할 핵심]
 당신은 성과관리 역량 트레이닝용 NPC입니다. 팀장(사용자)의 접근 방식에 현실적으로 반응하여 학습자가 다양한 코칭 전략의 효과를 체감할 수 있게 해주세요.`;
@@ -922,10 +1061,16 @@ function initChat() {
   const scenario = scenarios[currentScenario];
   conversationHistory = [];
   userTurns = 0;
+  lastFeedbackData = null;
   updatePips();
 
   const container = document.getElementById('chatContainer');
   container.innerHTML = '';
+
+  // 완료 배너 숨기기
+  document.getElementById('completeBanner').classList.remove('visible');
+  // 모달 다운로드 바 숨기기
+  document.getElementById('downloadBar').style.display = 'none';
 
   // 퀵버튼 제거됨
 
@@ -1051,18 +1196,21 @@ async function sendMessage() {
     });
 
     const data = await response.json();
-    const reply = data.content?.[0]?.text || '(홍도가 말문이 막혔습니다...)';
+    const reply = data.content?.[0]?.text || '그게 말이죠, 팀장님... 음, 잠깐만요. 제 생각을 좀 정리해야겠습니다요. [뒤통수를 긁적이며 시선을 피한다]';
 
     removeTyping();
     conversationHistory.push({ role: 'assistant', content: reply });
     appendHongdo(reply);
 
     if (userTurns >= MAX_TURNS) {
-      setTimeout(() => appendSystem('5번의 대화가 완료되었습니다. 성과관리 역량 피드백을 받아보세요!'), 500);
+      setTimeout(() => {
+        appendSystem('5번의 대화가 완료되었습니다. 성과관리 역량 피드백을 받아보세요!');
+        document.getElementById('completeBanner').classList.add('visible');
+      }, 500);
     }
   } catch (e) {
     removeTyping();
-    appendHongdo('아이고야, 제가 잠깐 정신이 팔렸구먼요... 다시 한번 말씀해 주시겠습니까요? [머쓱하게 웃으며 뒷목을 긁는다]');
+    appendHongdo('아이고야, 제가 잠깐 정신이 팔렸구먼요... 그게 말이죠, 팀장님 말씀이 워낙 찌르는 데가 있어서. 다시 한번 말씀해 주시겠습니까요? [머쓱하게 웃으며 뒷목을 긁는다]');
   }
 
   document.getElementById('sendBtn').disabled = false;
@@ -1105,6 +1253,8 @@ async function openFeedback() {
     const clean = raw.replace(/```json|```/g, '').trim();
     const fb = JSON.parse(clean);
 
+    lastFeedbackData = fb;   // 피드백 저장
+
     const tagClass = t => t === '우수' ? 'tag-good' : t === '보통' ? 'tag-mid' : 'tag-low';
     const r = scenario.rubric;
 
@@ -1142,6 +1292,8 @@ async function openFeedback() {
           <p><strong>다음 시도해볼 것:</strong> ${fb.tip}</p>
         </div>
       </div>`;
+
+    document.getElementById('downloadBar').style.display = 'flex';
   } catch (e) {
     document.getElementById('feedbackBody').innerHTML = `
       <div style="text-align:center; padding:30px; color:rgba(245,234,214,0.4); font-family:'Noto Sans KR',sans-serif; font-size:13px;">
@@ -1156,6 +1308,200 @@ function closeModal() {
 
 function resetChat() {
   initChat();
+}
+
+// ─── DOWNLOAD HELPERS ───
+function getTimestamp() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+function triggerDownload(content, filename) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildChatText() {
+  const scenario = scenarios[currentScenario];
+  const ts = new Date().toLocaleString('ko-KR');
+  const lines = [
+    '══════════════════════════════════════════',
+    '  성과관리 역량 시뮬레이션 — 대화 기록',
+    '══════════════════════════════════════════',
+    `시나리오 : ${scenario.tag}`,
+    `저장 일시 : ${ts}`,
+    '──────────────────────────────────────────',
+    ''
+  ];
+  conversationHistory.forEach(m => {
+    const speaker = m.role === 'user' ? '👤 팀장 (나)' : '🟢 엄홍도 (팀원)';
+    lines.push(speaker);
+    lines.push(m.content);
+    lines.push('');
+  });
+  lines.push('══════════════════════════════════════════');
+  return lines.join('\n');
+}
+
+function buildFeedbackText() {
+  if (!lastFeedbackData) return null;
+  const fb = lastFeedbackData;
+  const scenario = scenarios[currentScenario];
+  const r = scenario.rubric;
+  const ts = new Date().toLocaleString('ko-KR');
+  const lines = [
+    '══════════════════════════════════════════',
+    '  성과관리 역량 시뮬레이션 — 피드백 결과',
+    '══════════════════════════════════════════',
+    `시나리오 : ${scenario.tag}`,
+    `저장 일시 : ${ts}`,
+    '',
+    '[ 역량 평가 결과 ]',
+    '──────────────────────────────────────────',
+    `${r.d1.label}`,
+    `  점수 : ${fb.d1.score}점  [${fb.d1.tag}]`,
+    `  ${fb.d1.comment}`,
+    '',
+    `${r.d2.label}`,
+    `  점수 : ${fb.d2.score}점  [${fb.d2.tag}]`,
+    `  ${fb.d2.comment}`,
+    '',
+    `${r.d3.label}`,
+    `  점수 : ${fb.d3.score}점  [${fb.d3.tag}]`,
+    `  ${fb.d3.comment}`,
+    '',
+    '[ 종합 평가 ]',
+    '──────────────────────────────────────────',
+    fb.overall,
+    '',
+    '[ 다음에 시도해볼 것 ]',
+    '──────────────────────────────────────────',
+    fb.tip,
+    '',
+    '══════════════════════════════════════════'
+  ];
+  return lines.join('\n');
+}
+
+function downloadChat() {
+  if (conversationHistory.length === 0) {
+    alert('저장할 대화 내용이 없습니다.');
+    return;
+  }
+  triggerDownload(buildChatText(), `홍도_대화기록_${getTimestamp()}.txt`);
+}
+
+function downloadFeedback() {
+  if (!lastFeedbackData) {
+    alert('먼저 피드백을 받아보세요!');
+    return;
+  }
+  triggerDownload(buildFeedbackText(), `홍도_피드백결과_${getTimestamp()}.txt`);
+}
+
+function downloadAll() {
+  if (conversationHistory.length === 0) {
+    alert('저장할 대화 내용이 없습니다.');
+    return;
+  }
+  const chatPart = buildChatText();
+  const feedbackPart = lastFeedbackData
+    ? '\n\n\n' + buildFeedbackText()
+    : '\n\n[ 피드백 없음 — 피드백 받기 후 다시 저장해보세요 ]';
+  triggerDownload(chatPart + feedbackPart, `홍도_전체기록_${getTimestamp()}.txt`);
+}
+
+// ─── IMAGE SAVE ───
+function showToast(msg) {
+  let toast = document.getElementById('toastMsg');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toastMsg';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+async function captureAndSave(element, filename, opts = {}) {
+  showToast('🖼 이미지 생성 중...');
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#f0e6d3',
+      logging: false,
+      ...opts
+    });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ 이미지 저장 완료!');
+  } catch (e) {
+    showToast('❌ 이미지 저장에 실패했습니다.');
+    console.error(e);
+  }
+}
+
+async function saveChatImage() {
+  if (conversationHistory.length === 0) {
+    showToast('저장할 대화 내용이 없습니다.');
+    return;
+  }
+
+  // 채팅 컨테이너를 풀 높이로 캡처하기 위해 임시 클론 생성
+  const original = document.getElementById('chatContainer');
+  const clone = original.cloneNode(true);
+  clone.style.cssText = `
+    position: fixed; top: -9999px; left: 50%;
+    transform: translateX(-50%);
+    width: ${original.offsetWidth}px;
+    max-height: none; height: auto;
+    overflow: visible;
+    background: #fdf8f0;
+    padding: 24px;
+    border: 1.5px solid #c8a87a;
+    border-radius: 4px;
+    font-family: 'Noto Serif KR', serif;
+  `;
+
+  // 헤더 라벨 삽입
+  const scenario = scenarios[currentScenario];
+  const label = document.createElement('div');
+  label.style.cssText = 'font-family:Noto Sans KR,sans-serif;font-size:12px;font-weight:700;color:#b5821e;letter-spacing:2px;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #ddc99a;';
+  label.textContent = `성과관리 역량 시뮬레이션 · ${scenario.tag}`;
+  clone.insertBefore(label, clone.firstChild);
+
+  document.body.appendChild(clone);
+  await captureAndSave(clone, `홍도_대화이미지_${getTimestamp()}.png`);
+  document.body.removeChild(clone);
+}
+
+async function saveFeedbackImage() {
+  if (!lastFeedbackData) {
+    showToast('먼저 피드백을 받아보세요!');
+    return;
+  }
+  const body = document.getElementById('feedbackBody');
+  // 다운로드바 잠깐 숨기고 캡처
+  const bar = document.getElementById('downloadBar');
+  bar.style.display = 'none';
+  await captureAndSave(body, `홍도_피드백이미지_${getTimestamp()}.png`, {
+    backgroundColor: '#faf4e8'
+  });
+  bar.style.display = 'flex';
 }
 
 function handleKey(e) {
