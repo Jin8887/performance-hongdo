@@ -427,7 +427,7 @@
   .input-row {
     display: flex;
     gap: 12px;
-    align-items: flex-end;
+    align-items: stretch;
   }
   textarea {
     flex: 1;
@@ -439,7 +439,7 @@
     font-size: 16px;
     color: var(--text);
     resize: none;
-    min-height: 64px;
+    min-height: 52px;
     max-height: 140px;
     line-height: 1.7;
     outline: none;
@@ -449,7 +449,8 @@
   textarea::placeholder { color: var(--text-soft); opacity: 0.6; }
   textarea:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(139,31,48,0.08); }
   .btn-send {
-    width: 60px; height: 60px;
+    width: 52px;
+    align-self: stretch;
     background: var(--red);
     border: none;
     border-radius: 4px;
@@ -468,6 +469,7 @@
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    width: calc(100% - 52px - 12px);
   }
   .btn-feedback {
     flex: 1;
@@ -810,7 +812,7 @@
   <div class="header">
     <div class="header-badge">Performance Management · 성과관리 역량 시뮬레이션</div>
     <h1>엄홍도와 함께하는<br><em>성과관리 대화법</em></h1>
-    <p class="header-sub">팀장의 코칭이 성과를 만듭니다</p>
+    <p class="header-sub">목표 설정과 실행 관리 — 팀장의 코칭이 성과를 만듭니다</p>
     <div class="header-divider"></div>
   </div>
 
@@ -819,14 +821,20 @@
     <div class="scenario-header">
       <span class="icon">📋</span>
       <span>상황 배경</span>
-      <span class="competency-tag" id="competencyTag">성과관리</span>
+      <span class="competency-tag" id="competencyTag">성과관리 - 목표 설정</span>
     </div>
     <div class="scenario-body">
       <div class="section-label">▪ 배경 상황</div>
       <div class="scenario-situation" id="scenarioText"></div>
       <div class="scenario-hint" id="scenarioHint"></div>
     </div>
-
+    <div class="scenario-nav">
+      <div class="scenario-dots">
+        <div class="dot active" onclick="selectScenario(0)"></div>
+        <div class="dot" onclick="selectScenario(1)"></div>
+      </div>
+      <button class="btn-scenario" onclick="selectScenario((currentScenario+1)%2)">다음 시나리오 →</button>
+    </div>
   </div>
 
   <!-- TURN + CHAT -->
@@ -898,19 +906,47 @@
 // ─── SCENARIOS ───
 const scenarios = [
   {
-    tag: '성과관리',
+    // ── 시나리오 1: 목표 설정 ──
+    tag: '성과관리 - 목표 설정',
+    competency: '목표 설정',
+    situation: `올해 본부는 전략 방향을 전환했습니다.<br>
+그간 집중해온 <strong>"운영 효율화"</strong>에서 벗어나,<br>
+내년부터는 <strong>"신규 고객 확보와 시장 확대"</strong>를 최우선 과제로 삼기로 했습니다.<br><br>
+팀별 내년도 사업계획에는 이 전략 전환을 어떻게 반영할지가 핵심 검토 사항입니다.<br><br>
+홍도가 제출한 목표는 다음과 같습니다.<br>
+<span class="highlight-problem">팀 매출액 작년 대비 10% 성장 / 고객 민원 건수 연간 10건 이하 유지<br>
+→ 작년 목표와 항목은 동일하고, 목표 수치만 일부 높아진 계획입니다.</span>`,
+    hint: `홍도의 목표가 틀린 것은 아닙니다. 하지만 조직의 전략 전환이 전혀 반영되지 않았습니다.<br>
+홍도를 지적하기보다, 올해와 내년 조직 방향의 차이를 함께 짚으면서<br>
+홍도 스스로 연결고리를 찾도록 이끄는 것이 핵심입니다.`,
+    opening: `팀장님, 이번 사업계획 제가 공들여 만들었습니다요. 작년에 매출 목표를 아슬아슬하게 맞췄던 게 영 찜찜해서, 올해는 성장 목표도 더 높이 잡고 민원 관리도 더 촘촘하게 넣었습니다. 이 정도면 꽤 탄탄한 계획 아닙니까? [흐뭇하게 문서를 내밀며 칭찬을 기다린다]`,
+    quickBtns: [
+      '홍도야, 내년에 본부에서 강조하는 방향이 뭔지는 알고 있어?',
+      '이 목표가 조직 전체 방향과 어떻게 연결되는 것 같아?',
+      '잘 잡았네. 그럼 이걸 어떻게 측정할 생각이야?'
+    ],
+    rubric: {
+      d1: { label: '🎯 전략 연계 유도', desc: '조직의 전략 전환을 홍도 스스로 인식하도록 이끌었는가?' },
+      d2: { label: '🔗 연결고리 탐색', desc: '홍도의 기존 목표를 출발점으로 삼아 전략과 연결하도록 질문했는가?' },
+      d3: { label: '💬 접근 방식', desc: '홍도를 비난하거나 일방적으로 지시하지 않고 함께 생각하도록 이끌었는가?' }
+    }
+  },
+  {
+    // ── 시나리오 2: 실행 및 관리 ──
+    tag: '성과관리 - 실행 및 관리',
     competency: '실행 및 관리',
-    situation: `홍도의 팀은 올해 중요한 프로젝트를 맡았습니다.<br>
-반기 목표 달성률 80% 이상, 월별 진행 보고가 계획에 포함되어 있었습니다.<br><br>
+    situation: `우리 팀은 올해 중요한 프로젝트를 맡았고,<br>
+홍도는 그 중 핵심 파트의 실행을 담당하고 있습니다.<br>
+반기 목표 달성률 80% 이상, 월별 진행 상황 보고가 계획에 포함되어 있었습니다.<br><br>
 그런데 3분기 점검 결과,<br>
-<span class="highlight-problem">목표 달성률이 50%에 머물러 있고, 이미 두 달 전부터 일정이 지연되고 있었던 것으로 드러났습니다.</span><br>
-홍도는 매주 월요일 팀원들과 상황을 공유해왔다고 말합니다.<br>
-하지만 그 내용이 위로 보고된 적은 없었고, <strong>공식 보고는 이번 분기 점검이 처음</strong>입니다.`,
+<span class="highlight-problem">홍도가 담당한 파트의 달성률이 50%에 머물러 있고,<br>이미 두 달 전부터 일정이 지연되고 있었던 것으로 드러났습니다.</span><br>
+홍도는 매주 월요일 동료들과 상황을 공유해왔다고 말합니다.<br>
+하지만 그 내용이 팀장에게 보고된 적은 없었고, <strong>공식 보고는 이번 분기 점검이 처음</strong>입니다.`,
     hint: `점검은 일정이 아니라 기준입니다.<br>
-목표 대비 현재 어디에 있는지, 어떤 상황이 되면 공유해야 하는지 —<br>
+목표 대비 현재 어디에 있는지, 어떤 상황이 되면 팀장에게 공유해야 하는지 —<br>
 <strong>무엇을 어떻게 점검할지</strong>를 함께 정의하지 않으면 문제는 늦게 발견됩니다.<br>
 홍도의 점검 노력은 인정하되, 기준 부재의 문제를 홍도 스스로 인식하도록 이끄세요.`,
-    opening: `팀장님, 저 팀 관리 소홀히 한 적 없습니다요. 매주 월요일마다 팀원들이랑 빠짐없이 모여서 이번 주 어떻게 돌아가는지 싹 다 확인하고 있었다니까요. 제가 모르고 있었던 게 아니라, 다 파악하고 있었습니다요. [억울하다기보다 자신 있게, 당당한 표정으로 팔짱을 낀다]`,
+    opening: `팀장님, 저도 이렇게 될 줄은 몰랐습니다요. 근데 손 놓고 있었던 건 아닙니다요. 매주 월요일마다 동료들이랑 모여서 진행 상황 꼬박꼬박 짚어왔고, 좀 늦어지긴 했어도 어떻게든 맞출 수 있을 것 같았습니다요. 해결 된 이후에 말씀드리면 될 것 같아서... [머리를 긁적이며 시선을 약간 피한다]`,
     quickBtns: [
       '매주 하는 거 알아. 그때 뭘 기준으로 잘 되고 있다고 판단해?',
       '지난 두 달간 일정 지연을 언제쯤 감지하고 있었어?',
@@ -945,7 +981,7 @@ function buildSystemPrompt(scenario) {
 [현재 상황]
 ${isS1
   ? `내년도 사업계획 수립 시즌. 홍도는 팀 매출액 10% 성장, 고객 민원 건수 감소 등 팀 내부 기준의 목표를 스스로 준비해왔고, 꽤 공들인 계획이라 자부하고 있음. 그러나 본부의 전략 전환(운영 효율화 → 신규 고객 확보)은 목표에 전혀 반영되지 않음. 홍도의 목표는 기존 고객 매출 유지에 집중되어 있고, 신규 고객 확보 관련 지표는 없음. 홍도는 이 전략 전환을 들어보긴 했지만 자신의 목표와 연결해서 생각해본 적이 없음.`
-  : `3분기 점검에서 목표 달성률이 50%에 그쳤고, 2개월 전부터 지연이 있었음이 드러남. 홍도는 매주 팀원들과 상황을 공유해왔기에 "소홀히 하지 않았다"는 자신감이 있음. 하지만 그 점검에는 목표 대비 달성률, 리스크 기준, 보고 시점 기준이 없었음. 문제를 감지하면서도 "어떻게든 되겠지"로 버텼고, 공식 보고를 하지 않음.`
+  : `3분기 점검에서 목표 달성률이 50%에 그쳤고, 2개월 전부터 지연이 있었음이 드러남. 홍도는 매주 동료들과 상황을 공유해왔기에 "소홀히 하지 않았다"는 자신감이 있음. 하지만 그 점검에는 목표 대비 달성률, 리스크 기준, 보고 시점 기준이 없었음. 문제를 감지하면서도 "어떻게든 되겠지"로 버텼고, 팀장에게 보고를 하지 않음.`
 }
 
 [말투 규칙]
@@ -987,8 +1023,8 @@ function buildFeedbackPrompt(scenario, dialogText) {
 [시나리오]
 역량: ${scenario.competency}
 ${isS1
-  ? '상황: 팀원 홍도가 내년 사업계획 목표를 제출했으나, 본부의 전략 전환(운영 효율화→신규 고객 확보)이 전혀 반영되지 않은 상태. 팀장은 홍도 스스로 조직 전략과의 연결고리를 찾도록 이끌어야 한다.'
-  : '상황: 3분기 점검에서 목표 달성률 50%, 2개월 전부터 지연이 있었음이 드러남. 팀원 홍도는 매주 팀원들과 상황을 공유했다고 주장. 팀장은 홍도의 점검 노력은 인정하되, 기준 없는 점검의 한계를 홍도 스스로 인식하도록 이끌어야 한다.'
+  ? '상황: 홍도(팀원)가 내년 사업계획 목표를 제출했으나, 본부의 전략 전환(운영 효율화→신규 고객 확보)이 전혀 반영되지 않은 상태. 팀장은 홍도 스스로 조직 전략과의 연결고리를 찾도록 이끌어야 한다.'
+  : '상황: 3분기 점검에서 목표 달성률 50%, 2개월 전부터 지연이 있었음이 드러남. 홍도(팀원)는 매주 동료들과 상황을 공유했다고 주장. 팀장은 홍도의 점검 노력은 인정하되, 기준 없는 점검의 한계를 홍도 스스로 인식하도록 이끌어야 한다.'
 }
 
 [대화 내용]
@@ -1041,6 +1077,7 @@ function initChat() {
 
   // 퀵버튼 제거됨
 
+  appendSystem('대화가 시작됩니다. 팀장의 한 말씀을 기다립니다...');
   conversationHistory.push({ role: 'assistant', content: scenario.opening });
   appendHongdo(scenario.opening);
 }
